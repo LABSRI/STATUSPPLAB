@@ -718,7 +718,7 @@ function buildCard(d, idx) {
 
   // Timeline dates
   const tlItems = [
-    { label: "Selesai pengujian",  val: d.selesaiUji },
+    { label: "Pengujian",  val: d.selesaiUji },
     { label: "Pembuatan report",   val: d.pembuatanReport },
     { label: "Approval Foreman",   val: d.apvForeman },
     { label: "Approval Kasie",     val: d.apvKasie },
@@ -817,7 +817,7 @@ function getStepsDone(d) {
 }
 
 function buildStepper(stepsDone) {
-  const labels = ["Diterima", "Pengujian selesai", "Pembuatan report", "Approval", "Report dikirim"];
+  const labels = ["Diterima", "Pengujian", "Pembuatan report", "Approval", "Report dikirim"];
   let html = '<div class="stepper">';
 
   for (let i = 0; i < labels.length; i++) {
