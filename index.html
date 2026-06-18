@@ -526,7 +526,7 @@ async function loadData() {
     for (const sheet of SHEETS) {
       // Gunakan Google Sheets JSON API (publik, tanpa auth)
       // Spreadsheet harus di-share "Anyone with the link can view"
-      const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheet.name)}`;
+      const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheet.name)}&t=${Date.now()}`;
       const res  = await fetch(url);
       if (!res.ok) continue;
 
@@ -536,9 +536,9 @@ async function loadData() {
       if (!json || !json.table || !json.table.rows) continue;
 
       const rows = json.table.rows;
-      // Baris 0 = header baris 2 (gviz otomatis skip baris 1 judul merged)
-      // Data dimulai dari baris 1 (index 1)
-      const dataRows = rows.slice(1);
+      // Skip baris 0 (judul) dan baris 1 (header kolom)
+      // Data real mulai dari index 2
+      const dataRows = rows.slice(2);
 
       dataRows.forEach(row => {
         const cells = row.c || [];
