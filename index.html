@@ -472,7 +472,7 @@
 <script>
 // ── KONFIGURASI ────────────────────────────────────────────────
 // Ganti dengan Spreadsheet ID Google Sheets kamu
-const SPREADSHEET_ID = "1afK2DauEN70FDmp8jH7IYCWhzMoJbYzTHnqm6NzxqHE";
+const SPREADSHEET_ID = "1fPaACwH69xnlQi81NrUN2TyhSl1_nO8e";
 
 // Sheet yang akan dibaca (bisa tambah lebih)
 const SHEETS = [
@@ -481,12 +481,13 @@ const SHEETS = [
   { name: "RAW_MATERIAL",                 label: "Raw Material" },
 ];
 
-// Index kolom (0-based) — sesuai header INSPEKSI_KOMPON baris 2
-// B=0(No) C=1(Tgl) D=2(NomorPP) E=3(Seksi) F=4(Nama) G=5(Sampel)
-// H=6(Jml) I=7(Item) J=8(Sblm) K-O=9-13(Ssdh) P=14(Ket) Q=15(RefSpec)
-// R=16(Kat) S=17(Tujuan) T=18(JenisUji) U=19(Penerima) V=20(RencSelesai)
-// W=21(Email) X=22(SelsUji) Y=23(PmbtRpt) Z=24(ApvFor) AA=25(ApvKasie)
-// AB=26(ApvKadept) AC=27(PngRpt) AD=28(StatusPP)
+// Index kolom (0-based) — sesuai struktur Google Sheets aktual
+// A=0(No) B=1(Tgl) C=2(NomorPP) D=3(Seksi) E=4(Nama) F=5(Sampel)
+// G=6(Jml) H=7(Item) I=8(Sblm) J=9(Ssdh1) K=10(Ssdh2) L=11(Ssdh3)
+// M=12(Ssdh4) N=13(Ssdh5) O=14(Ket) P=15(RefSpec) Q=16(KatPP)
+// R=17(Tujuan) S=18(JenisUji) T=19(Penerima) U=20(RencSelesai)
+// V=21(Email) W=22(Pengujian) X=23(PmbtRpt) Y=24(ApvForeman)
+// Z=25(ApvKasie) AA=26(ApvKadept) AB=27(PngRpt) AC=28(StatusPP)
 const COL = {
   no: 0, tanggal: 1, nomorPP: 2, seksi: 3, nama: 4,
   sampel: 5, jumlah: 6, itemUbah: 7, sebelum: 8,
@@ -507,8 +508,8 @@ const STEPS = [
 ];
 
 // ── STATE ──────────────────────────────────────────────────────
-let allData       = [];
-let activeFilter  = "SEMUA";
+let allData        = [];
+let activeFilter2  = "SEMUA";
 let activeKelompok = "SEMUA";
 
 // ── LOAD DATA ──────────────────────────────────────────────────
@@ -546,6 +547,10 @@ async function loadData() {
             const parts = c.v.replace("Date(","").replace(")","").split(",");
             const d = new Date(+parts[0], +parts[1], +parts[2]);
             return d.toLocaleDateString("id-ID", {day:"2-digit",month:"short",year:"numeric"});
+          }
+          // Tangani format tanggal dari gviz yang sudah diformat (f field)
+          if (c.f && (String(c.f).match(/\d{2}\/\d{2}\/\d{4}/) || String(c.f).match(/\d{2} \w+ \d{4}/))) {
+            return c.f;
           }
           return c.f || String(c.v);
         };
@@ -630,9 +635,6 @@ function updateSummary() {
 }
 
 // ── FILTER & SEARCH ────────────────────────────────────────────
-let activeFilter2   = "SEMUA";
-let activeKelompok  = "SEMUA";
-
 function setFilter(el) {
   document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
   el.classList.add("active");
