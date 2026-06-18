@@ -536,9 +536,9 @@ async function loadData() {
       if (!json || !json.table || !json.table.rows) continue;
 
       const rows = json.table.rows;
-      // Skip baris 0 (judul) dan baris 1 (header kolom)
-      // Data real mulai dari index 2
-      const dataRows = rows.slice(2);
+      // parsedNumHeaders:2 → gviz sudah otomatis skip baris judul & header
+      // rows[0] langsung = data pertama, tidak perlu slice
+      const dataRows = rows;
 
       dataRows.forEach(row => {
         const cells = row.c || [];
@@ -560,8 +560,11 @@ async function loadData() {
         const nomorPP = get(COL.nomorPP);
         const status  = get(COL.status).toUpperCase().trim();
 
-        // Skip baris kosong atau baris yang nomorPP-nya tidak valid
-        if (!nomorPP || nomorPP === "" || nomorPP === "0" || nomorPP === "null") return;
+        // Skip baris kosong, baris judul, atau baris header
+        // Baris valid: nomorPP tidak kosong, bukan teks header, bukan angka murni kecil
+        if (!nomorPP || nomorPP === "" || nomorPP === "null") return;
+        if (nomorPP === "Nomor PP" || nomorPP === "No" || nomorPP === "DATABASE PERMINTAAN PENGUJIAN") return;
+        if (nomorPP.includes("DATABASE") || nomorPP.includes("PERMINTAAN PENGUJIAN")) return;
 
         combined.push({
           sheetLabel:       sheet.label,
