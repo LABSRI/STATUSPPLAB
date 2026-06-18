@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Status Permintaan Pengujian — Seksi Laboratorium</title>
+<style>
+  /* ── TOKENS ─────────────────────────────────────────────── */
+  :root {
+    --ink:       #0f1923;
+    --ink-2:     #4a5568;
+    --ink-3:     #94a3b8;
+    --surface:   #f7f9fc;
+    --white:     #ffffff;
+    --border:    #e2e8f0;
+    --border-2:  #cbd5e1;
+
+    --blue:      #1d4ed8;
+    --blue-bg:   #eff6ff;
+    --blue-mid:  #93c5fd;
+
+    --amber:     #b45309;
+    --amber-bg:  #fffbeb;
+    --amber-mid: #fcd34d;
+
+    --violet:    #6d28d9;
+    --violet-bg: #f5f3ff;
+    --violet-mid:#c4b5fd;
+
+    --orange:    #c2410c;
+    --orange-bg: #fff7ed;
+    --orange-mid:#fdba74;
+
+    --green:     #15803d;
+    --green-bg:  #f0fdf4;
+    --green-mid: #86efac;
+
+    --radius:    10px;
+    --radius-sm: 6px;
+    --shadow:    0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
+    --shadow-md: 0 4px 16px rgba(0,0,0,.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: var(--surface);
+    color: var(--ink);
+    font-size: 14px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ─────────────────────────────────────────────── */
+  .header {
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-left { display: flex; align-items: center; gap: 12px; }
+  .logo-mark {
+    width: 34px; height: 34px;
+    background: var(--blue);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .logo-mark svg { width: 18px; height: 18px; }
+  .brand { font-size: 13px; font-weight: 600; color: var(--ink); }
+  .brand span { color: var(--ink-3); font-weight: 400; }
+  .last-updated { font-size: 12px; color: var(--ink-3); }
+
+  /* ── MAIN LAYOUT ─────────────────────────────────────────── */
+  .container { max-width: 960px; margin: 0 auto; padding: 28px 20px 60px; }
+
+  /* ── SEARCH BAR ──────────────────────────────────────────── */
+  .search-wrap { margin-bottom: 20px; position: relative; }
+  .search-wrap input {
+    width: 100%;
+    padding: 11px 16px 11px 42px;
+    border: 1.5px solid var(--border-2);
+    border-radius: var(--radius);
+    font-size: 14px;
+    background: var(--white);
+    color: var(--ink);
+    outline: none;
+    transition: border-color .15s;
+    box-shadow: var(--shadow);
+  }
+  .search-wrap input:focus { border-color: var(--blue); }
+  .search-wrap input::placeholder { color: var(--ink-3); }
+  .search-icon {
+    position: absolute; left: 14px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--ink-3);
+  }
+
+  /* ── FILTER TABS ─────────────────────────────────────────── */
+  .filter-row {
+    display: flex; gap: 6px; margin-bottom: 20px;
+    overflow-x: auto; padding-bottom: 2px;
+  }
+  .filter-row::-webkit-scrollbar { display: none; }
+  .tab {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1.5px solid var(--border);
+    background: var(--white);
+    color: var(--ink-2);
+    white-space: nowrap;
+    transition: all .15s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .tab:hover { border-color: var(--border-2); background: var(--surface); }
+  .tab.active { background: var(--ink); border-color: var(--ink); color: #fff; }
+  .tab-count {
+    background: rgba(255,255,255,.2);
+    border-radius: 10px;
+    padding: 1px 6px;
+    font-size: 11px;
+  }
+  .tab:not(.active) .tab-count {
+    background: var(--border);
+    color: var(--ink-2);
+  }
+
+  /* ── KELOMPOK FILTER ─────────────────────────────────────── */
+  .section-label {
+    font-size: 11px; font-weight: 600; color: var(--ink-3);
+    text-transform: uppercase; letter-spacing: .06em;
+    margin-bottom: 8px;
+  }
+  .kelompok-row {
+    display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;
+  }
+  .k-chip {
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 12px; font-weight: 500;
+    cursor: pointer;
+    border: 1.5px solid var(--border);
+    background: var(--white);
+    color: var(--ink-2);
+    display: flex; align-items: center; gap: 6px;
+    transition: all .15s;
+  }
+  .k-chip:hover { border-color: var(--border-2); }
+  .k-chip .k-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border-2); }
+  .k-chip.active-kompon    { background: #eff6ff; border-color: #93c5fd; color: var(--blue); }
+  .k-chip.active-kompon    .k-dot { background: var(--blue); }
+  .k-chip.active-physical  { background: #f5f3ff; border-color: #c4b5fd; color: var(--violet); }
+  .k-chip.active-physical  .k-dot { background: var(--violet); }
+  .k-chip.active-rawmat    { background: #fff7ed; border-color: #fdba74; color: var(--orange); }
+  .k-chip.active-rawmat    .k-dot { background: var(--orange); }
+  .k-chip.active-all       { background: var(--ink); border-color: var(--ink); color: #fff; }
+  .k-chip.active-all       .k-dot { background: #fff; }
+
+  /* ── SUMMARY CARDS ───────────────────────────────────────── */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 760px) {
+    .summary-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 480px) {
+    .summary-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  .s-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    box-shadow: var(--shadow);
+  }
+  .s-card-label { font-size: 11px; color: var(--ink-3); margin-bottom: 4px; text-transform: uppercase; letter-spacing: .04em; }
+  .s-card-val { font-size: 26px; font-weight: 700; line-height: 1; }
+  .s-card.blue   .s-card-val { color: var(--blue); }
+  .s-card.amber  .s-card-val { color: var(--amber); }
+  .s-card.violet .s-card-val { color: var(--violet); }
+  .s-card.orange .s-card-val { color: var(--orange); }
+  .s-card.green  .s-card-val { color: var(--green); }
+
+  /* ── PP CARD ─────────────────────────────────────────────── */
+  .pp-list { display: flex; flex-direction: column; gap: 12px; }
+
+  .pp-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: box-shadow .15s, border-color .15s;
+  }
+  .pp-card:hover { box-shadow: var(--shadow-md); border-color: var(--border-2); }
+  .pp-card.expanded { border-color: var(--blue-mid); }
+
+  .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  .card-top-left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+  .nomor-pp { font-weight: 700; font-size: 15px; color: var(--ink); }
+  .kategori-badge {
+    font-size: 11px; font-weight: 500;
+    padding: 2px 8px; border-radius: 4px;
+    background: var(--border); color: var(--ink-2);
+  }
+
+  .status-badge {
+    font-size: 11px; font-weight: 600;
+    padding: 4px 10px; border-radius: 20px;
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .status-badge.diterima   { background: var(--blue-bg);   color: var(--blue);   }
+  .status-badge.proses     { background: var(--amber-bg);  color: var(--amber);  }
+  .status-badge.report     { background: var(--violet-bg); color: var(--violet); }
+  .status-badge.approval   { background: var(--orange-bg); color: var(--orange); }
+  .status-badge.close      { background: var(--green-bg);  color: var(--green);  }
+
+  .card-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 24px;
+    margin-bottom: 16px;
+  }
+  @media (max-width: 480px) { .card-meta { grid-template-columns: 1fr; } }
+  .meta-item { }
+  .meta-label { font-size: 11px; color: var(--ink-3); margin-bottom: 1px; }
+  .meta-val { font-size: 13px; color: var(--ink); }
+
+  /* ── PROGRESS STEPPER ────────────────────────────────────── */
+  .progress-wrap { margin-top: 4px; }
+  .stepper {
+    display: flex; align-items: center; gap: 0;
+    overflow-x: auto; padding-bottom: 4px;
+  }
+  .stepper::-webkit-scrollbar { display: none; }
+
+  .step { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 60px; }
+  .step-connector { flex: 1; height: 2px; background: var(--border); margin-top: -18px; }
+  .step-connector.done { background: var(--green-mid); }
+  .step-connector.active { background: var(--blue-mid); }
+
+  .step-dot {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600;
+    border: 2px solid var(--border);
+    background: var(--white);
+    color: var(--ink-3);
+    position: relative; z-index: 1;
+    flex-shrink: 0;
+    transition: all .2s;
+  }
+  .step-dot.done   { background: var(--green-bg);  border-color: var(--green-mid); color: var(--green); }
+  .step-dot.active { background: var(--blue-bg);   border-color: var(--blue);      color: var(--blue); box-shadow: 0 0 0 3px rgba(29,78,216,.1); }
+  .step-label {
+    font-size: 10px; color: var(--ink-3); text-align: center;
+    margin-top: 6px; line-height: 1.3; max-width: 64px;
+  }
+  .step-label.done   { color: var(--green); }
+  .step-label.active { color: var(--blue); font-weight: 600; }
+
+  /* ── DETAIL PANEL (expanded) ─────────────────────────────── */
+  .detail-panel {
+    display: none;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+  .pp-card.expanded .detail-panel { display: block; }
+
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 28px;
+  }
+  @media (max-width: 480px) { .detail-grid { grid-template-columns: 1fr; } }
+  .detail-item .meta-label { font-size: 11px; }
+  .detail-item .meta-val { font-size: 13px; }
+
+  .jenis-uji-wrap {
+    margin-top: 12px; padding: 10px 14px;
+    background: var(--surface);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+  }
+  .jenis-uji-label { font-size: 11px; color: var(--ink-3); margin-bottom: 6px; }
+  .jenis-uji-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+  .jenis-tag {
+    font-size: 11px; padding: 3px 9px;
+    background: var(--blue-bg); color: var(--blue);
+    border-radius: 4px; font-weight: 500;
+  }
+
+  /* ── DATE TIMELINE (expanded) ────────────────────────────── */
+  .timeline-wrap {
+    margin-top: 14px;
+    display: grid; grid-template-columns: repeat(3,1fr);
+    gap: 8px;
+  }
+  @media (max-width: 480px) { .timeline-wrap { grid-template-columns: 1fr 1fr; } }
+  .tl-item {
+    padding: 8px 10px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--white);
+  }
+  .tl-item.filled { border-color: var(--green-mid); background: var(--green-bg); }
+  .tl-label { font-size: 10px; color: var(--ink-3); margin-bottom: 2px; }
+  .tl-val { font-size: 12px; font-weight: 600; color: var(--ink-2); }
+  .tl-item.filled .tl-val { color: var(--green); }
+  .tl-val.empty { color: var(--border-2); font-weight: 400; font-style: italic; }
+
+  /* ── EMPTY & LOADING ─────────────────────────────────────── */
+  .empty-state {
+    text-align: center; padding: 60px 20px;
+    color: var(--ink-3);
+  }
+  .empty-state svg { width: 48px; height: 48px; margin-bottom: 12px; opacity: .4; }
+  .empty-state p { font-size: 14px; }
+
+  .loading-state {
+    text-align: center; padding: 60px 20px; color: var(--ink-3);
+  }
+  .spinner {
+    width: 32px; height: 32px; border: 3px solid var(--border);
+    border-top-color: var(--blue); border-radius: 50%;
+    animation: spin .7s linear infinite;
+    margin: 0 auto 12px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .error-banner {
+    background: #fef2f2; border: 1px solid #fecaca;
+    color: #dc2626; border-radius: var(--radius);
+    padding: 14px 16px; margin-bottom: 20px;
+    font-size: 13px; display: none;
+  }
+
+  /* ── CHEVRON ─────────────────────────────────────────────── */
+  .chevron { color: var(--ink-3); transition: transform .2s; flex-shrink: 0; }
+  .pp-card.expanded .chevron { transform: rotate(180deg); }
+
+  /* ── REFRESH BTN ─────────────────────────────────────────── */
+  .refresh-btn {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; color: var(--ink-3);
+    background: none; border: 1px solid var(--border);
+    border-radius: 6px; padding: 5px 10px;
+    cursor: pointer; transition: all .15s;
+  }
+  .refresh-btn:hover { color: var(--blue); border-color: var(--blue); }
+  .refresh-btn.spinning svg { animation: spin .7s linear infinite; }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-left">
+    <div class="logo-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+        <rect x="9" y="3" width="6" height="4" rx="1"/>
+        <path d="M9 12h6M9 16h4"/>
+      </svg>
+    </div>
+    <div>
+      <div class="brand">Status Pengujian <span>— Seksi Laboratorium</span></div>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <span class="last-updated" id="lastUpdated">—</span>
+    <button class="refresh-btn" id="refreshBtn" onclick="loadData()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+      </svg>
+      Refresh
+    </button>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="error-banner" id="errorBanner"></div>
+
+  <!-- Summary -->
+  <div class="summary-grid">
+    <div class="s-card blue">
+      <div class="s-card-label">Total PP</div>
+      <div class="s-card-val" id="cTotal">—</div>
+    </div>
+    <div class="s-card amber">
+      <div class="s-card-label">Proses Pengujian</div>
+      <div class="s-card-val" id="cProses">—</div>
+    </div>
+    <div class="s-card violet">
+      <div class="s-card-label">Pembuatan Report</div>
+      <div class="s-card-val" id="cReport">—</div>
+    </div>
+    <div class="s-card orange">
+      <div class="s-card-label">Approval</div>
+      <div class="s-card-val" id="cApproval">—</div>
+    </div>
+    <div class="s-card green">
+      <div class="s-card-label">Close</div>
+      <div class="s-card-val" id="cClose">—</div>
+    </div>
+  </div>
+
+  <!-- Kelompok Filter -->
+  <div class="section-label">Filter kelompok pengujian</div>
+  <div class="kelompok-row" id="kelompokRow">
+    <button class="k-chip active-all" data-kelompok="SEMUA" data-activeclass="active-all" onclick="setKelompok(this)">
+      <span class="k-dot"></span> Semua kelompok
+    </button>
+    <button class="k-chip" data-kelompok="Inspeksi Kompon" data-activeclass="active-kompon" onclick="setKelompok(this)">
+      <span class="k-dot"></span> Inspeksi Kompon
+    </button>
+    <button class="k-chip" data-kelompok="Physical Properties" data-activeclass="active-physical" onclick="setKelompok(this)">
+      <span class="k-dot"></span> Inspeksi Physical Properties
+    </button>
+    <button class="k-chip" data-kelompok="Raw Material" data-activeclass="active-rawmat" onclick="setKelompok(this)">
+      <span class="k-dot"></span> Inspeksi Raw Material
+    </button>
+  </div>
+
+  <!-- Search -->
+  <div class="search-wrap">
+    <span class="search-icon">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+    </span>
+    <input type="text" id="searchInput" placeholder="Cari nomor PP, nama, sampel, atau seksi…" oninput="renderList()">
+  </div>
+
+  <!-- Filter tabs -->
+  <div class="section-label">Filter status</div>
+  <div class="filter-row" id="filterRow">
+    <button class="tab active" data-filter="SEMUA" onclick="setFilter(this)">Semua <span class="tab-count" id="tc-semua">0</span></button>
+    <button class="tab" data-filter="DITERIMA" onclick="setFilter(this)">Diterima <span class="tab-count" id="tc-diterima">0</span></button>
+    <button class="tab" data-filter="PROSES PENGUJIAN" onclick="setFilter(this)">Proses Pengujian <span class="tab-count" id="tc-proses">0</span></button>
+    <button class="tab" data-filter="PEMBUATAN REPORT" onclick="setFilter(this)">Pembuatan Report <span class="tab-count" id="tc-report">0</span></button>
+    <button class="tab" data-filter="APPROVAL" onclick="setFilter(this)">Approval <span class="tab-count" id="tc-approval">0</span></button>
+    <button class="tab" data-filter="CLOSE" onclick="setFilter(this)">Close <span class="tab-count" id="tc-close">0</span></button>
+  </div>
+
+  <!-- List -->
+  <div id="ppList" class="pp-list">
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Memuat data…</p>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ── KONFIGURASI ────────────────────────────────────────────────
+// Ganti dengan Spreadsheet ID Google Sheets kamu
+const SPREADSHEET_ID = "1fPaACwH69xnlQi81NrUN2TyhSl1_nO8e";
+
+// Sheet yang akan dibaca (bisa tambah lebih)
+const SHEETS = [
+  { name: "INSPEKSI_KOMPON",              label: "Inspeksi Kompon" },
+  { name: "PHYSICAL_PROPERTIES",          label: "Physical Properties" },
+  { name: "RAW_MATERIAL",                 label: "Raw Material" },
+];
+
+// Index kolom (0-based) — sesuai header INSPEKSI_KOMPON baris 2
+// B=0(No) C=1(Tgl) D=2(NomorPP) E=3(Seksi) F=4(Nama) G=5(Sampel)
+// H=6(Jml) I=7(Item) J=8(Sblm) K-O=9-13(Ssdh) P=14(Ket) Q=15(RefSpec)
+// R=16(Kat) S=17(Tujuan) T=18(JenisUji) U=19(Penerima) V=20(RencSelesai)
+// W=21(Email) X=22(SelsUji) Y=23(PmbtRpt) Z=24(ApvFor) AA=25(ApvKasie)
+// AB=26(ApvKadept) AC=27(PngRpt) AD=28(StatusPP)
+const COL = {
+  no: 0, tanggal: 1, nomorPP: 2, seksi: 3, nama: 4,
+  sampel: 5, jumlah: 6, itemUbah: 7, sebelum: 8,
+  sesudah1: 9, sesudah2: 10, sesudah3: 11, sesudah4: 12, sesudah5: 13,
+  keterangan: 14, refSpec: 15, kategori: 16, tujuan: 17,
+  jenisUji: 18, penerima: 19, rencana: 20, email: 21,
+  selesaiUji: 22, pembuatanReport: 23, apvForeman: 24,
+  apvKasie: 25, apvKadept: 26, pengirimanReport: 27, status: 28
+};
+
+// Step labels untuk progress bar
+const STEPS = [
+  { key: "diterima",        label: "Diterima" },
+  { key: "selesaiUji",      label: "Pengujian selesai" },
+  { key: "pembuatanReport", label: "Pembuatan report" },
+  { key: "apvKasie",        label: "Approval" },
+  { key: "pengirimanReport",label: "Report dikirim" },
+];
+
+// ── STATE ──────────────────────────────────────────────────────
+let allData       = [];
+let activeFilter  = "SEMUA";
+let activeKelompok = "SEMUA";
+
+// ── LOAD DATA ──────────────────────────────────────────────────
+async function loadData() {
+  const btn = document.getElementById("refreshBtn");
+  btn.classList.add("spinning");
+  showError("");
+
+  try {
+    let combined = [];
+
+    for (const sheet of SHEETS) {
+      // Gunakan Google Sheets JSON API (publik, tanpa auth)
+      // Spreadsheet harus di-share "Anyone with the link can view"
+      const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheet.name)}`;
+      const res  = await fetch(url);
+      if (!res.ok) continue;
+
+      const text = await res.text();
+      // Strip Google's JSONP wrapper
+      const json = JSON.parse(text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/)?.[1] || "null");
+      if (!json || !json.table || !json.table.rows) continue;
+
+      const rows = json.table.rows;
+      // Baris 0 = header baris 1 (kosong di Excel), baris 1 = header baris 2, mulai data dari baris 2
+      const dataRows = rows.slice(2);
+
+      dataRows.forEach(row => {
+        const cells = row.c || [];
+        const get = (i) => {
+          const c = cells[i];
+          if (!c || c.v === null || c.v === undefined) return "";
+          // Tangani format tanggal dari gviz (Date(year,month,day))
+          if (typeof c.v === "string" && c.v.startsWith("Date(")) {
+            const parts = c.v.replace("Date(","").replace(")","").split(",");
+            const d = new Date(+parts[0], +parts[1], +parts[2]);
+            return d.toLocaleDateString("id-ID", {day:"2-digit",month:"short",year:"numeric"});
+          }
+          return c.f || String(c.v);
+        };
+
+        const nomorPP = get(COL.nomorPP);
+        const status  = get(COL.status).toUpperCase().trim();
+        if (!nomorPP || nomorPP === "0") return;
+
+        combined.push({
+          sheetLabel:       sheet.label,
+          no:               get(COL.no),
+          tanggal:          get(COL.tanggal),
+          nomorPP,
+          seksi:            get(COL.seksi),
+          nama:             get(COL.nama),
+          sampel:           get(COL.sampel),
+          jumlah:           get(COL.jumlah),
+          jenisUji:         get(COL.jenisUji),
+          penerima:         get(COL.penerima),
+          rencana:          get(COL.rencana),
+          keterangan:       get(COL.keterangan),
+          kategori:         get(COL.kategori),
+          tujuan:           get(COL.tujuan),
+          selesaiUji:       get(COL.selesaiUji),
+          pembuatanReport:  get(COL.pembuatanReport),
+          apvForeman:       get(COL.apvForeman),
+          apvKasie:         get(COL.apvKasie),
+          apvKadept:        get(COL.apvKadept),
+          pengirimanReport: get(COL.pengirimanReport),
+          status,
+        });
+      });
+    }
+
+    // Urutkan terbaru dulu
+    combined.sort((a,b) => String(b.tanggal).localeCompare(String(a.tanggal)));
+    allData = combined;
+
+    updateSummary();
+    renderList();
+    document.getElementById("lastUpdated").textContent =
+      "Update: " + new Date().toLocaleTimeString("id-ID", {hour:"2-digit",minute:"2-digit"});
+
+  } catch(err) {
+    showError("Gagal memuat data. Pastikan Google Sheets sudah di-share publik (Anyone with the link can view). Error: " + err.message);
+    document.getElementById("ppList").innerHTML = "";
+  } finally {
+    btn.classList.remove("spinning");
+  }
+}
+
+// ── SUMMARY COUNTER ────────────────────────────────────────────
+function updateSummary() {
+  // Hitung hanya dari kelompok aktif agar angka sinkron dengan filter kelompok
+  const source = activeKelompok === "SEMUA"
+    ? allData
+    : allData.filter(d => d.sheetLabel === activeKelompok);
+
+  const c = { total:0, proses:0, report:0, approval:0, close:0, diterima:0 };
+  source.forEach(d => {
+    c.total++;
+    if      (d.status === "PROSES PENGUJIAN")  c.proses++;
+    else if (d.status === "PEMBUATAN REPORT")  c.report++;
+    else if (d.status === "APPROVAL")          c.approval++;
+    else if (d.status === "CLOSE")             c.close++;
+    else if (d.status === "DITERIMA")          c.diterima++;
+  });
+
+  document.getElementById("cTotal").textContent    = c.total;
+  document.getElementById("cProses").textContent   = c.proses;
+  document.getElementById("cReport").textContent   = c.report;
+  document.getElementById("cApproval").textContent = c.approval;
+  document.getElementById("cClose").textContent    = c.close;
+
+  // Tab counts mengikuti kelompok aktif juga
+  document.getElementById("tc-semua").textContent    = c.total;
+  document.getElementById("tc-diterima").textContent = c.diterima;
+  document.getElementById("tc-proses").textContent   = c.proses;
+  document.getElementById("tc-report").textContent   = c.report;
+  document.getElementById("tc-approval").textContent = c.approval;
+  document.getElementById("tc-close").textContent    = c.close;
+}
+
+// ── FILTER & SEARCH ────────────────────────────────────────────
+let activeFilter2   = "SEMUA";
+let activeKelompok  = "SEMUA";
+
+function setFilter(el) {
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  el.classList.add("active");
+  activeFilter2 = el.dataset.filter;
+  renderList();
+}
+
+function setKelompok(el) {
+  // Hapus semua active class dari chip
+  document.querySelectorAll(".k-chip").forEach(c => {
+    c.classList.remove("active-all","active-kompon","active-physical","active-rawmat");
+  });
+  // Tambah active class yang sesuai
+  el.classList.add(el.dataset.activeclass);
+  activeKelompok = el.dataset.kelompok;
+  updateSummary();
+  renderList();
+}
+
+function renderList() {
+  const q = document.getElementById("searchInput").value.toLowerCase().trim();
+
+  const filtered = allData.filter(d => {
+    const matchKelompok = activeKelompok === "SEMUA" || d.sheetLabel === activeKelompok;
+    const matchFilter   = activeFilter2 === "SEMUA" || d.status === activeFilter2;
+    const matchSearch   = !q || [d.nomorPP, d.nama, d.sampel, d.seksi, d.sheetLabel]
+      .some(v => v.toLowerCase().includes(q));
+    return matchKelompok && matchFilter && matchSearch;
+  });
+
+  const list = document.getElementById("ppList");
+
+  if (filtered.length === 0) {
+    list.innerHTML = `
+      <div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <p>Tidak ada PP yang sesuai pencarian.</p>
+      </div>`;
+    return;
+  }
+
+  list.innerHTML = filtered.map((d,i) => buildCard(d, i)).join("");
+}
+
+// ── BUILD CARD HTML ────────────────────────────────────────────
+function buildCard(d, idx) {
+  const badgeClass = {
+    "DITERIMA":         "diterima",
+    "PROSES PENGUJIAN": "proses",
+    "PEMBUATAN REPORT": "report",
+    "APPROVAL":         "approval",
+    "CLOSE":            "close",
+  }[d.status] || "diterima";
+
+  const badgeLabel = {
+    "DITERIMA":         "Diterima",
+    "PROSES PENGUJIAN": "Proses Pengujian",
+    "PEMBUATAN REPORT": "Pembuatan Report",
+    "APPROVAL":         "Approval",
+    "CLOSE":            "Close ✓",
+  }[d.status] || d.status;
+
+  // Step logic
+  const stepDone = getStepsDone(d);
+  const stepperHTML = buildStepper(stepDone);
+
+  // Jenis uji tags
+  const tags = d.jenisUji
+    ? d.jenisUji.split(",").map(t => t.trim()).filter(Boolean)
+        .map(t => `<span class="jenis-tag">${t}</span>`).join("")
+    : "<span style='color:var(--ink-3);font-size:12px'>—</span>";
+
+  // Timeline dates
+  const tlItems = [
+    { label: "Selesai pengujian",  val: d.selesaiUji },
+    { label: "Pembuatan report",   val: d.pembuatanReport },
+    { label: "Approval Foreman",   val: d.apvForeman },
+    { label: "Approval Kasie",     val: d.apvKasie },
+    { label: "Approval Kadept",    val: d.apvKadept },
+    { label: "Pengiriman report",  val: d.pengirimanReport },
+  ];
+  const timelineHTML = tlItems.map(t => `
+    <div class="tl-item ${t.val ? 'filled' : ''}">
+      <div class="tl-label">${t.label}</div>
+      <div class="tl-val ${t.val ? '' : 'empty'}">${t.val || 'Belum'}</div>
+    </div>`).join("");
+
+  return `
+  <div class="pp-card" onclick="toggleCard(this)">
+    <div class="card-top">
+      <div class="card-top-left">
+        <span class="nomor-pp">${d.nomorPP}</span>
+        <span class="kategori-badge">${d.sheetLabel}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="status-badge ${badgeClass}">${badgeLabel}</span>
+        <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="card-meta">
+      <div class="meta-item">
+        <div class="meta-label">Nama sampel</div>
+        <div class="meta-val">${d.sampel || '—'}</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Peminta</div>
+        <div class="meta-val">${d.nama} — ${d.seksi}</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Tanggal PP</div>
+        <div class="meta-val">${d.tanggal || '—'}</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Rencana selesai</div>
+        <div class="meta-val">${d.rencana || '—'}</div>
+      </div>
+    </div>
+
+    <div class="progress-wrap">
+      ${stepperHTML}
+    </div>
+
+    <!-- DETAIL PANEL -->
+    <div class="detail-panel">
+      <div class="detail-grid">
+        <div class="detail-item">
+          <div class="meta-label">Penerima PP</div>
+          <div class="meta-val">${d.penerima || '—'}</div>
+        </div>
+        <div class="detail-item">
+          <div class="meta-label">Kategori PP</div>
+          <div class="meta-val">${d.kategori || '—'}</div>
+        </div>
+        <div class="detail-item">
+          <div class="meta-label">Keterangan</div>
+          <div class="meta-val">${d.keterangan || '—'}</div>
+        </div>
+        <div class="detail-item">
+          <div class="meta-label">Tujuan pengujian</div>
+          <div class="meta-val">${d.tujuan || '—'}</div>
+        </div>
+      </div>
+
+      <div class="jenis-uji-wrap">
+        <div class="jenis-uji-label">Jenis pengujian</div>
+        <div class="jenis-uji-tags">${tags}</div>
+      </div>
+
+      <div style="margin-top:14px">
+        <div class="meta-label" style="margin-bottom:8px">Timeline proses</div>
+        <div class="timeline-wrap">${timelineHTML}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── STEP LOGIC ─────────────────────────────────────────────────
+function getStepsDone(d) {
+  // Returns array of booleans for each step
+  const isDone = (v) => v && v !== "" && v !== "-" && v !== "0";
+  return [
+    true,               // Diterima — selalu done kalau PP ada
+    isDone(d.selesaiUji),
+    isDone(d.pembuatanReport),
+    isDone(d.apvKasie) || isDone(d.apvKadept),
+    isDone(d.pengirimanReport),
+  ];
+}
+
+function buildStepper(stepsDone) {
+  const labels = ["Diterima", "Pengujian selesai", "Pembuatan report", "Approval", "Report dikirim"];
+  let html = '<div class="stepper">';
+
+  for (let i = 0; i < labels.length; i++) {
+    const done    = stepsDone[i];
+    const isLast  = i === labels.length - 1;
+    // Active = step pertama yang belum done
+    const firstUndone = stepsDone.indexOf(false);
+    const active  = !done && i === firstUndone;
+
+    const dotClass   = done ? "done" : active ? "active" : "";
+    const labelClass = done ? "done" : active ? "active" : "";
+    const dotContent = done
+      ? `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`
+      : String(i + 1);
+
+    html += `<div class="step">
+      <div class="step-dot ${dotClass}">${dotContent}</div>
+      <div class="step-label ${labelClass}">${labels[i]}</div>
+    </div>`;
+
+    if (!isLast) {
+      const connClass = done ? "done" : active ? "active" : "";
+      html += `<div class="step-connector ${connClass}"></div>`;
+    }
+  }
+
+  html += "</div>";
+  return html;
+}
+
+// ── HELPERS ────────────────────────────────────────────────────
+function toggleCard(el) {
+  el.classList.toggle("expanded");
+}
+
+function showError(msg) {
+  const el = document.getElementById("errorBanner");
+  el.style.display = msg ? "block" : "none";
+  el.textContent = msg;
+}
+
+// ── INIT ───────────────────────────────────────────────────────
+loadData();
+// Auto-refresh setiap 5 menit
+setInterval(loadData, 5 * 60 * 1000);
+</script>
+</body>
+</html>
