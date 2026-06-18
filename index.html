@@ -498,6 +498,8 @@ const COL = {
   apvKasie: 25, apvKadept: 26, pengirimanReport: 27, status: 28
 };
 
+// Validasi: nomorPP harus ada di index 2, status di index 28
+
 // Step labels untuk progress bar
 const STEPS = [
   { key: "diterima",        label: "Diterima" },
@@ -534,21 +536,21 @@ async function loadData() {
       if (!json || !json.table || !json.table.rows) continue;
 
       const rows = json.table.rows;
-      // Baris 0 = header baris 1 (kosong di Excel), baris 1 = header baris 2, mulai data dari baris 2
-      const dataRows = rows.slice(2);
+      // Baris 0 = header baris 2 (gviz otomatis skip baris 1 judul merged)
+      // Data dimulai dari baris 1 (index 1)
+      const dataRows = rows.slice(1);
 
       dataRows.forEach(row => {
         const cells = row.c || [];
         const get = (i) => {
           const c = cells[i];
           if (!c || c.v === null || c.v === undefined) return "";
-          // Tangani format tanggal dari gviz (Date(year,month,day))
+          // Tangani format tanggal dari gviz
           if (typeof c.v === "string" && c.v.startsWith("Date(")) {
             const parts = c.v.replace("Date(","").replace(")","").split(",");
             const d = new Date(+parts[0], +parts[1], +parts[2]);
             return d.toLocaleDateString("id-ID", {day:"2-digit",month:"short",year:"numeric"});
           }
-          // Tangani format tanggal dari gviz yang sudah diformat (f field)
           if (c.f && (String(c.f).match(/\d{2}\/\d{2}\/\d{4}/) || String(c.f).match(/\d{2} \w+ \d{4}/))) {
             return c.f;
           }
@@ -557,7 +559,9 @@ async function loadData() {
 
         const nomorPP = get(COL.nomorPP);
         const status  = get(COL.status).toUpperCase().trim();
-        if (!nomorPP || nomorPP === "0") return;
+
+        // Skip baris kosong atau baris yang nomorPP-nya tidak valid
+        if (!nomorPP || nomorPP === "" || nomorPP === "0" || nomorPP === "null") return;
 
         combined.push({
           sheetLabel:       sheet.label,
