@@ -526,7 +526,7 @@ async function loadData() {
     for (const sheet of SHEETS) {
       // Gunakan Google Sheets JSON API (publik, tanpa auth)
       // Spreadsheet harus di-share "Anyone with the link can view"
-      const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheet.name)}&t=${Date.now()}`;
+      const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheet.name)}&headers=2&t=${Date.now()}`;
       const res  = await fetch(url);
       if (!res.ok) continue;
 
